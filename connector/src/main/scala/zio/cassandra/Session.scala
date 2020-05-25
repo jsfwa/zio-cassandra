@@ -31,6 +31,9 @@ object Session {
 
     override def execute(query: String): Task[AsyncResultSet] =
       fromJavaAsync(underlying.executeAsync(query))
+
+    override def close(): Task[Unit] =
+      fromJavaAsync(underlying.closeAsync()).unit
   }
 
   object Live {
@@ -61,7 +64,7 @@ object Session {
     }
 
     private def make(session: => CompletionStage[CqlSession]): TaskManaged[service.Session] =
-      fromJavaAsync(session).toManaged(session => fromJavaAsync(session.closeAsync()).orDie).map(new Live(_))
+      fromJavaAsync(session).map(new Live(_)).toManaged(_.close().orDie)
   }
 
   def live(builder: CqlSessionBuilder): TaskLayer[Session] =
