@@ -29,9 +29,8 @@ object SessionSpec extends DefaultRunnableSpec with LogSupport with Fixtures {
           delete      <- session.prepare(deleteQuery)
           select      <- session.prepare(selectQuery)
           emptyResult <- session.bind(select, Seq("user1")) >>= session.selectOne
-          preparedBatchSeq <- ZIO.collectAll(0.until(10).map { i =>
-                               session.bind(insert, Seq("user1", i.asJava, i.toString, Instant.now()))
-                             })
+          preparedBatchSeq <- ZIO.foreach(0.until(10))(i =>
+            session.bind(insert, Seq("user1", i.asJava, i.toString, Instant.now())))
 
           _         <- executeBatch(preparedBatchSeq)
           _         <- session.bind(update, Seq("nope", "user1", 2.asJava)) >>= session.execute
@@ -96,7 +95,7 @@ trait Fixtures {
     f(session.get)
   }
 
-  def getSession: URIO[Session, service.Session] = RIO.access[Session](_.get)
+  def getSession: URIO[Session, service.Session] = ZIO.service[service.Session]
 
   def executeBatch(seq: Seq[BoundStatement]): RIO[Session, Unit] = withSession { s =>
     val batch = BatchStatement
