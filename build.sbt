@@ -1,8 +1,11 @@
+ThisBuild / crossScalaVersions := Seq("2.13.3", "2.11.12", "2.12.12", "0.26.0-RC1")
+
+ThisBuild / scalaVersion := crossScalaVersions.value.head
+
 lazy val connector =
   (project in file("connector"))
     .settings(
       testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
-      scalaVersion := "2.13.3",
       organization := "io.github.jsfwa",
       homepage := Some(url("https://github.com/jsfwa/zio-cassandra")),
       scmInfo := Some(ScmInfo(url("https://github.com/jsfwa/zio-cassandra"), "git@github.com:jsfwa/zio-cassandra.git")),
@@ -15,25 +18,60 @@ lazy val connector =
       libraryDependencies ++=
         Dependencies.cassandraDependencies ++
           Dependencies.zioDependencies ++
-          Dependencies.testCommon,
+          Dependencies.testCommon ++
+          Seq(
+            "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6",
+            "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full,
+            compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full)
+          ),
       scalacOptions ++= Seq(
         "-encoding",
         "utf-8",
+        "-feature",
         "-unchecked",
-        "-explaintypes",
-        "-Yrangepos",
-        "-Ywarn-unused",
-        "-Ymacro-annotations",
-        "-deprecation",
-        "-language:higherKinds",
-        "-language:implicitConversions",
-        "-Xlint:-serial",
-        "-Xfatal-warnings",
-        "-Werror",
-        "-Wconf:any:error"
-      ),
+        "-deprecation"
+      ) ++
+        (scalaBinaryVersion.value match {
+          case v if v.startsWith("2.13") =>
+            List(
+              "-P:silencer:globalFilters=JavaConverters",
+              "-Xlint:-serial",
+              "-Ywarn-unused",
+              "-Ymacro-annotations",
+              "-Yrangepos",
+              "-Werror",
+              "-explaintypes",
+              "-language:higherKinds",
+              "-language:implicitConversions",
+              "-Xfatal-warnings",
+              "-Wconf:any:error"
+            )
+          case v if v.startsWith("2.12") =>
+            Nil
+          case v if v.startsWith("2.11") =>
+            List("-target:jvm-1.8")
+          case v if v.startsWith("0.") =>
+            Nil
+          case other => sys.error(s"Unsupported scala version: $other")
+        }),
       publishArtifact in GlobalScope in Test := false,
-      parallelExecution in Test := false
+      parallelExecution in Test := false,
+      releaseCrossBuild := true,
+      releaseProcess := {
+        import sbtrelease.ReleaseStateTransformations._
+        Seq[ReleaseStep](
+          inquireVersions,
+          runClean,
+          releaseStepCommandAndRemaining("+test"),
+          setReleaseVersion,
+          commitReleaseVersion,
+          tagRelease,
+          releaseStepCommandAndRemaining("+publish"),
+          setNextVersion,
+          commitNextVersion,
+          pushChanges
+        )
+      }
     )
 
 lazy val root = (project in file("."))

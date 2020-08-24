@@ -8,7 +8,7 @@ import zio.test.TestFailure
 object ZTestContainer {
 
   def cassandra: ZLayer[Any, TestFailure[Nothing], Has[CassandraContainer]] =
-    managed(CassandraContainer("cassandra:3.11.6")).toLayer
+    managed(CassandraContainer("cassandra:3.11.7")).toLayer
       .mapError(TestFailure.die)
 
   def managed[T <: Startable](container: T): TaskManaged[T] =
