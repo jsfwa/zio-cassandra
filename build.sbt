@@ -1,4 +1,4 @@
-ThisBuild / crossScalaVersions := Seq("2.13.3", "2.11.12", "2.12.12", "0.27.0-RC1")
+ThisBuild / crossScalaVersions := Seq("2.13.3", "2.11.12", "2.12.12")
 
 ThisBuild / scalaVersion := crossScalaVersions.value.head
 name := "zio-cassandra"
