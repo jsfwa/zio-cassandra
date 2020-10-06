@@ -57,7 +57,7 @@ lazy val connector =
         }),
       publishArtifact in GlobalScope in Test := false,
       parallelExecution in Test := false,
-      releaseCrossBuild := true,
+      publishTo := sonatypePublishToBundle.value,
       releaseProcess := {
         import sbtrelease.ReleaseStateTransformations._
         Seq[ReleaseStep](
@@ -67,7 +67,7 @@ lazy val connector =
           setReleaseVersion,
           commitReleaseVersion,
           tagRelease,
-          releaseStepCommandAndRemaining("+publish"),
+          releaseStepCommandAndRemaining("+publishSigned"),
           setNextVersion,
           commitNextVersion,
           pushChanges
