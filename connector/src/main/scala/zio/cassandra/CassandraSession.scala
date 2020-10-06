@@ -5,11 +5,11 @@ import java.util.concurrent.CompletionStage
 import java.util.function.Supplier
 
 import com.datastax.dse.driver.api.core.cql.reactive.ReactiveRow
-import com.datastax.oss.driver.api.core.{CqlSession, CqlSessionBuilder}
+import com.datastax.oss.driver.api.core.{ CqlSession, CqlSessionBuilder }
 import com.datastax.oss.driver.api.core.cql._
 import com.datastax.oss.driver.internal.core.config.typesafe.DefaultDriverConfigLoader
 import com.typesafe.config.Config
-import zio.{Task, TaskManaged}
+import zio.{ Task, TaskManaged }
 import zio.interop.reactivestreams._
 import zio.stream.Stream
 

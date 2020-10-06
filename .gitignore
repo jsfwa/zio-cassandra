@@ -2,11 +2,11 @@
 test-output/
 .sbtopts
 project/.sbt
-test-output/
-.bloop
-.metals
+.bloop/
+.metals/
 project/metals.sbt
-.idea
+.idea/
 coursier
 **/.DS_Store
 publish.sbt
+.bsp/

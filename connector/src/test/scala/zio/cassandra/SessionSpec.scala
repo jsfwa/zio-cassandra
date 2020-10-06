@@ -31,8 +31,10 @@ object SessionSpec extends DefaultRunnableSpec with LogSupport with Fixtures {
           delete      <- session.prepare(deleteQuery)
           select      <- session.prepare(selectQuery)
           emptyResult <- session.bind(select, Seq("user1")) >>= session.selectOne
-          preparedBatchSeq <- ZIO.collectAll(0.until(10) map (i =>
-                               session.bind(insert, Seq("user1", i.asJava, i.toString, Instant.now())))
+          preparedBatchSeq <- ZIO.collectAll(
+                               0.until(10) map (i =>
+                                 session.bind(insert, Seq("user1", i.asJava, i.toString, Instant.now()))
+                               )
                              )
           _         <- executeBatch(preparedBatchSeq)
           _         <- session.bindAndExecute(insert, Seq("user1", 11.asJava, 21.toString, Instant.now()))

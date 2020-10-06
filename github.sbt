@@ -10,7 +10,7 @@ ThisBuild / githubWorkflowBuild := Seq(
 ThisBuild / githubWorkflowEnv ++= Map(
   "SONATYPE_USERNAME" -> s"$${{ secrets.SONATYPE_USERNAME }}",
   "SONATYPE_PASSWORD" -> s"$${{ secrets.SONATYPE_PASSWORD }}",
-  "PGP_SECRET" -> s"$${{ secrets.PGP_SECRET }}"
+  "PGP_SECRET"        -> s"$${{ secrets.PGP_SECRET }}"
 )
 
 ThisBuild / githubWorkflowPublishPreamble +=

@@ -1,6 +1,7 @@
-ThisBuild / crossScalaVersions := Seq("2.13.3", "2.11.12", "2.12.12", "0.26.0-RC1")
+ThisBuild / crossScalaVersions := Seq("2.13.3", "2.11.12", "2.12.12", "0.27.0-RC1")
 
 ThisBuild / scalaVersion := crossScalaVersions.value.head
+name := "zio-cassandra"
 
 lazy val connector =
   (project in file("connector"))
@@ -21,7 +22,7 @@ lazy val connector =
           Dependencies.testCommon ++
           Seq(
             "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6",
-            "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full,
+            "com.github.ghik"        % "silencer-lib"             % "1.7.1" % Provided cross CrossVersion.full,
             compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full)
           ),
       scalacOptions ++= Seq(
