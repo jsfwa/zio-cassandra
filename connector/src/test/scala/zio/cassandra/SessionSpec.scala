@@ -8,6 +8,7 @@ import com.dimafeng.testcontainers.CassandraContainer
 import com.typesafe.config.ConfigFactory
 import wvlet.log.{ LogLevel, LogSupport, Logger }
 import zio.{ blocking => _, test => _, _ }
+import zio.cassandra.service.CassandraSession
 import zio.container.ZTestContainer
 import zio.test.{ DefaultRunnableSpec, _ }
 import zio.test.Assertion._
@@ -20,12 +21,10 @@ object SessionSpec extends DefaultRunnableSpec with LogSupport with Fixtures {
   }
 
   override def spec =
-    suite("Work with cassandra session - complete scenario")(
-      testM("Just create correct service and run queries")(
+    suite("Cassandra session")(
+      testM("complete scenario with multiple queries")(
         for {
           session     <- ZIO.service[service.CassandraSession]
-          _           <- session.execute(keyspaceQuery)
-          _           <- session.execute(tableQuery)
           insert      <- session.prepare(insertQuery)
           update      <- session.prepare(updateQuery)
           delete      <- session.prepare(deleteQuery)
@@ -50,6 +49,29 @@ object SessionSpec extends DefaultRunnableSpec with LogSupport with Fixtures {
               .find(r => r.getInt("seq_nr") == 2)
               .map(_.getString("data"))
           )(isSome(equalTo("nope")))
+        }
+      ),
+      testM("selectAll should be reference transparent")(
+        for {
+          session      <- ZIO.service[service.CassandraSession]
+          select       <- session.prepare(selectQuery)
+          effect       = (session.bind(select, Seq("user1")) >>= session.selectAll).map(_.map(_.getString(0)))
+          resultOne    <- effect
+          resultSecond <- effect
+        } yield {
+          assert(resultOne)(equalTo(resultSecond))
+        }
+      ),
+      testM("select should be reference transparent")(
+        for {
+          session      <- ZIO.service[service.CassandraSession]
+          select       <- session.prepare(selectQuery)
+          statement    <- session.bind(select, Seq("user1"))
+          stream       = session.select(statement).map(_.getString(0))
+          resultOne    <- stream.runCollect
+          resultSecond <- stream.runCollect
+        } yield {
+          assert(resultOne)(equalTo(resultSecond))
         }
       )
     ).provideCustomLayerShared(layer)
@@ -102,9 +124,13 @@ trait Fixtures {
       val config  = ConfigFactory.load().getConfig("cassandra.test-driver")
       CassandraSession.make(config, Seq(address))
     }
+    _ <- prepareTestSession(session).toManaged_
   } yield session).toLayer.mapError(TestFailure.die)
 
   val layer = layaerCassandra >+> layerSession
+
+  def prepareTestSession(session: CassandraSession) =
+    session.execute(keyspaceQuery) *> session.execute(tableQuery)
 
   def withSession[R](f: service.CassandraSession => Task[R]): ZIO[Session, Throwable, R] = ZIO.accessM[Session] {
     session => f(session.get)

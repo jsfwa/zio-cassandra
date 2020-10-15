@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   val cassandraDriverVersion = "4.9.0"
-  val zioVersion             = "1.0.2"
+  val zioVersion             = "1.0.3"
   val javaStreamsInterop     = "1.0.3.5"
 
   val cassandraDependencies = Seq(
