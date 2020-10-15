@@ -21,8 +21,8 @@ lazy val connector =
           Dependencies.zioDependencies ++
           Dependencies.testCommon ++
           Seq(
-            "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6",
-            "com.github.ghik"        % "silencer-lib"             % "1.7.1" % Provided cross CrossVersion.full,
+            "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0",
+            "com.github.ghik"         % "silencer-lib"            % "1.7.1" % Provided cross CrossVersion.full,
             compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full)
           ),
       scalacOptions ++= Seq(
@@ -51,9 +51,9 @@ lazy val connector =
             Nil
           case v if v.startsWith("2.11") =>
             List("-target:jvm-1.8")
-          case v if v.startsWith("0.") =>
+          case v if v.startsWith("0.")   =>
             Nil
-          case other => sys.error(s"Unsupported scala version: $other")
+          case other                     => sys.error(s"Unsupported scala version: $other")
         }),
       publishArtifact in GlobalScope in Test := false,
       parallelExecution in Test := false,

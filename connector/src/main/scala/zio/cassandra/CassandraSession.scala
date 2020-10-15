@@ -42,9 +42,14 @@ object CassandraSession {
     make(
       CqlSession
         .builder()
-        .withConfigLoader(new DefaultDriverConfigLoader(new Supplier[Config] {
-          def get: Config = config
-        }, false))
+        .withConfigLoader(
+          new DefaultDriverConfigLoader(
+            new Supplier[Config] {
+              def get: Config = config
+            },
+            false
+          )
+        )
     )
 
   def make(
@@ -57,14 +62,18 @@ object CassandraSession {
 
     val builder = CqlSession
       .builder()
-      .withConfigLoader(new DefaultDriverConfigLoader(new Supplier[Config] {
-        def get: Config = config
-      }, false))
+      .withConfigLoader(
+        new DefaultDriverConfigLoader(
+          new Supplier[Config] {
+            def get: Config = config
+          },
+          false
+        )
+      )
       .addContactPoints(contactPointsJava)
 
-    make(auth.fold(builder) {
-      case (username, password) =>
-        builder.withAuthCredentials(username, password)
+    make(auth.fold(builder) { case (username, password) =>
+      builder.withAuthCredentials(username, password)
     })
   }
 
