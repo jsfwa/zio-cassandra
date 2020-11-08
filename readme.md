@@ -1,3 +1,5 @@
+# ZIO Cassandra
+
 [![Release Artifacts][Badge-SonatypeReleases]][Link-SonatypeReleases] [![Snapshot Artifacts][Badge-SonatypeSnapshots]][Link-SonatypeSnapshots]
 
 [Link-SonatypeReleases]: https://oss.sonatype.org/content/repositories/releases/io/github/jsfwa/zio-cassandra_2.13/ "Sonatype Releases"
@@ -5,16 +7,11 @@
 [Badge-SonatypeReleases]: https://img.shields.io/nexus/r/https/oss.sonatype.org/io.github.jsfwa/zio-cassandra_2.13.svg "Sonatype Releases"
 [Badge-SonatypeSnapshots]: https://img.shields.io/nexus/s/https/oss.sonatype.org/io.github.jsfwa/zio-cassandra_2.13.svg "Sonatype Snapshots"
 
-#### zio-cassandra
-
-```text
-scala = 2.13.3
-cassandra-driver = 4.8.0
-zio = 1.0.1
-```
+#### zio-cassandra 
 
 Inspired by [akka/alpakka-cassandra](https://doc.akka.io/docs/alpakka/current/cassandra.html)
 
+Build on new async API of cassandra datastax driver 4.x
 
 #### Usage
 
@@ -23,7 +20,7 @@ Dependency:
 libraryDependencies += "io.github.jsfwa" %% "zio-cassandra" % "1.0.0"
 ```
 
-Check driver config documentation on [datastax](https://docs.datastax.com/en/developer/java-driver/4.6/manual/core/)
+Check driver config documentation on [datastax](https://docs.datastax.com/en/developer/java-driver/4.9/manual/core/)
 
 ```scala
 // Cassandra Session:

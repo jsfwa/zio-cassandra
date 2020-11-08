@@ -2,6 +2,7 @@ package zio.cassandra
 
 import java.net.InetSocketAddress
 import java.util.concurrent.CompletionStage
+import java.util.function.Supplier
 
 import com.datastax.dse.driver.api.core.cql.reactive.ReactiveRow
 import com.datastax.oss.driver.api.core.{ CqlSession, CqlSessionBuilder }
@@ -12,7 +13,8 @@ import zio.{ Task, TaskManaged }
 import zio.interop.reactivestreams._
 import zio.stream.Stream
 
-import scala.jdk.CollectionConverters._
+import scala.annotation.nowarn
+import scala.collection.JavaConverters.asJavaCollectionConverter
 
 object CassandraSession {
   import Task.{ fromCompletionStage => fromJavaAsync }
@@ -27,7 +29,7 @@ object CassandraSession {
       Task(stmt.bind(bindValues: _*))
 
     override def select(stmt: Statement[_]): Stream[Throwable, ReactiveRow] =
-      underlying.executeReactive(stmt).toStream(qSize = 256)
+      Stream.fromEffect(Task(underlying.executeReactive(stmt).toStream(qSize = 256))).flatten
 
     override def execute(query: String): Task[AsyncResultSet] =
       fromJavaAsync(underlying.executeAsync(query))
@@ -40,7 +42,14 @@ object CassandraSession {
     make(
       CqlSession
         .builder()
-        .withConfigLoader(new DefaultDriverConfigLoader(() => config, false))
+        .withConfigLoader(
+          new DefaultDriverConfigLoader(
+            new Supplier[Config] {
+              def get: Config = config
+            },
+            false
+          )
+        )
     )
 
   def make(
@@ -48,14 +57,23 @@ object CassandraSession {
     contactPoints: Seq[InetSocketAddress],
     auth: Option[(String, String)] = None
   ): TaskManaged[service.CassandraSession] = {
+    @nowarn("msg=JavaConverters")
+    val contactPointsJava = contactPoints.asJavaCollection
+
     val builder = CqlSession
       .builder()
-      .withConfigLoader(new DefaultDriverConfigLoader(() => config, false))
-      .addContactPoints(contactPoints.asJavaCollection)
+      .withConfigLoader(
+        new DefaultDriverConfigLoader(
+          new Supplier[Config] {
+            def get: Config = config
+          },
+          false
+        )
+      )
+      .addContactPoints(contactPointsJava)
 
-    make(auth.fold(builder) {
-      case (username, password) =>
-        builder.withAuthCredentials(username, password)
+    make(auth.fold(builder) { case (username, password) =>
+      builder.withAuthCredentials(username, password)
     })
   }
 
