@@ -12,12 +12,11 @@ import zio.container.ZTestContainer
 import zio.test.{ DefaultRunnableSpec, _ }
 import zio.test.Assertion._
 
-object SessionSpec extends DefaultRunnableSpec with LogSupport with Fixtures {
+object SessionSpec extends DefaultRunnableSpec with LogSupport with Fixtures:
   Logger.setDefaultLogLevel(LogLevel.INFO)
 
-  implicit class toJavaInt(val i: Int) extends AnyVal {
+  implicit class toJavaInt(val i: Int) extends AnyVal:
     def asJava: Integer = i.asInstanceOf[java.lang.Integer]
-  }
 
   override def spec =
     suite("Work with cassandra session - complete scenario")(
@@ -51,9 +50,8 @@ object SessionSpec extends DefaultRunnableSpec with LogSupport with Fixtures {
         }
       )
     ).provideCustomLayerShared(layer)
-}
 
-trait Fixtures {
+trait Fixtures:
   val keyspace = "test_keyspace"
 
   val keyspaceQuery =
@@ -116,4 +114,3 @@ trait Fixtures {
     s.execute(batch).unit
   }
 
-}

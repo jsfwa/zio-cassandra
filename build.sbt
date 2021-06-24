@@ -2,7 +2,7 @@ lazy val connector =
   (project in file("connector"))
     .settings(
       testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
-      scalaVersion := "2.13.3",
+      scalaVersion := "3.0.0",
       organization := "io.github.jsfwa",
       homepage := Some(url("https://github.com/jsfwa/zio-cassandra")),
       scmInfo := Some(ScmInfo(url("https://github.com/jsfwa/zio-cassandra"), "git@github.com:jsfwa/zio-cassandra.git")),
@@ -20,25 +20,20 @@ lazy val connector =
         "-encoding",
         "utf-8",
         "-unchecked",
-        "-explaintypes",
-        "-Yrangepos",
-        "-Ywarn-unused",
-        "-Ymacro-annotations",
+        "-indent",
+        "-rewrite",
         "-deprecation",
         "-language:higherKinds",
         "-language:implicitConversions",
-        "-Xlint:-serial",
-        "-Xfatal-warnings",
-        "-Werror",
-        "-Wconf:any:error"
+        "-Xfatal-warnings"
       ),
-      publishArtifact in GlobalScope in Test := false,
-      parallelExecution in Test := false,
-      fork in Test := true
+      Test / publishArtifact := false,
+      Test / parallelExecution := false,
+      Test / fork := true
     )
 
 lazy val root = (project in file("."))
   .aggregate(connector)
   .settings(
-    skip in publish := true
+    publish / skip := true
   )

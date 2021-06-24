@@ -5,7 +5,7 @@ import com.datastax.oss.driver.api.core.cql._
 import zio._
 import zio.stream.{ Stream, ZStream }
 
-trait CassandraSession {
+trait CassandraSession:
   def prepare(stmt: String): Task[PreparedStatement]
 
   def bind(stmt: PreparedStatement, bindValues: Seq[AnyRef]): Task[BoundStatement]
@@ -54,17 +54,15 @@ trait CassandraSession {
       res   <- selectAll(bound)
     } yield res
 
-  def executeBatch(seq: Seq[BoundStatement], batchType: DefaultBatchType): Task[AsyncResultSet] = {
+  def executeBatch(seq: Seq[BoundStatement], batchType: DefaultBatchType): Task[AsyncResultSet] =
     val batch = BatchStatement
       .builder(batchType)
       .addStatements(seq: _*)
       .build()
     execute(batch)
-  }
 
   def selectOne(stmt: Statement[_]): Task[Option[Row]] =
     execute(stmt).map(rs => Option(rs.one()))
 
   def selectAll(stmt: Statement[_]): Task[Seq[Row]] =
     select(stmt).runCollect
-}
