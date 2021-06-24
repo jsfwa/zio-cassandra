@@ -10,3 +10,4 @@ project/metals.sbt
 coursier
 **/.DS_Store
 publish.sbt
+.bsp

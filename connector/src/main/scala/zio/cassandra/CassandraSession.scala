@@ -14,9 +14,9 @@ import zio.stream.Stream
 
 import scala.jdk.CollectionConverters._
 
-object CassandraSession {
+object CassandraSession:
   import Task.{ fromCompletionStage => fromJavaAsync }
-  class Live(underlying: CqlSession) extends service.CassandraSession {
+  class Live(underlying: CqlSession) extends service.CassandraSession:
     override def prepare(stmt: String): Task[PreparedStatement] =
       fromJavaAsync(underlying.prepareAsync(stmt))
 
@@ -31,7 +31,6 @@ object CassandraSession {
 
     override def execute(query: String): Task[AsyncResultSet] =
       fromJavaAsync(underlying.executeAsync(query))
-  }
 
   def make(builder: CqlSessionBuilder): TaskManaged[service.CassandraSession] =
     make(builder.buildAsync())
@@ -47,7 +46,7 @@ object CassandraSession {
     config: Config,
     contactPoints: Seq[InetSocketAddress],
     auth: Option[(String, String)] = None
-  ): TaskManaged[service.CassandraSession] = {
+  ): TaskManaged[service.CassandraSession] =
     val builder = CqlSession
       .builder()
       .withConfigLoader(new DefaultDriverConfigLoader(() => config, false))
@@ -57,9 +56,7 @@ object CassandraSession {
       case (username, password) =>
         builder.withAuthCredentials(username, password)
     })
-  }
 
   private def make(session: => CompletionStage[CqlSession]): TaskManaged[service.CassandraSession] =
     fromJavaAsync(session).toManaged(session => fromJavaAsync(session.closeAsync()).orDie).map(new Live(_))
 
-}
