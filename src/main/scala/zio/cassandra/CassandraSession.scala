@@ -1,17 +1,15 @@
 package zio.cassandra
 
-import java.net.InetSocketAddress
-import java.util.concurrent.CompletionStage
-
-import com.datastax.dse.driver.api.core.cql.reactive.ReactiveRow
-import com.datastax.oss.driver.api.core.{ CqlSession, CqlSessionBuilder }
 import com.datastax.oss.driver.api.core.cql._
+import com.datastax.oss.driver.api.core.{ CqlSession, CqlSessionBuilder }
 import com.datastax.oss.driver.internal.core.config.typesafe.DefaultDriverConfigLoader
 import com.typesafe.config.Config
-import zio.{ Task, TaskManaged }
-import zio.interop.reactivestreams._
 import zio.stream.Stream
+import zio.stream.ZStream.Pull
+import zio.{ Chunk, Ref, Task, TaskManaged }
 
+import java.net.InetSocketAddress
+import java.util.concurrent.CompletionStage
 import scala.jdk.CollectionConverters._
 
 object CassandraSession {
@@ -26,8 +24,26 @@ object CassandraSession {
     override def bind(stmt: PreparedStatement, bindValues: Seq[AnyRef]): Task[BoundStatement] =
       Task(stmt.bind(bindValues: _*))
 
-    override def select(stmt: Statement[_]): Stream[Throwable, ReactiveRow] =
-      Stream.fromEffect(Task(underlying.executeReactive(stmt).toStream(qSize = 256))).flatten
+    override def select(stmt: Statement[_]): Stream[Throwable, Row] = Stream {
+      for {
+        io <- Ref.make(Option(execute(stmt))).toManaged_
+        pull = io.get.flatMap {
+          case None => Pull.end
+          case Some(task) =>
+            task.mapError(Option(_)).flatMap { rs =>
+              val result = Chunk.fromArray(rs.currentPage().asScala.toArray)
+              if (rs.hasMorePages) {
+                io.set(Some(fromJavaAsync(rs.fetchNextPage()))).as(result)
+              } else {
+                if (result.isEmpty) {
+                  Pull.end
+                } else io.set(None).as(result)
+
+              }
+            }
+        }
+      } yield pull
+    }
 
     override def execute(query: String): Task[AsyncResultSet] =
       fromJavaAsync(underlying.executeAsync(query))

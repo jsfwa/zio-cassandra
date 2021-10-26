@@ -73,7 +73,14 @@ object SessionSpec extends DefaultRunnableSpec with LogSupport with Fixtures {
         stream       = session.select(statement).map(_.getString(0))
         resultOne    <- stream.runCollect
         resultSecond <- stream.runCollect
-      } yield assert(resultOne)(equalTo(resultSecond)))
+      } yield assert(resultOne)(equalTo(resultSecond))),
+      testM("select should emit chunks sized equal to statement pageSize")(for {
+        session    <- ZIO.service[service.CassandraSession]
+        select     <- session.prepare(selectQuery("prepared_data"))
+        statement  <- session.bind(select, Seq("user1"))
+        stream     = session.select(statement.setPageSize(2)).map(_.getString(0))
+        chunkSizes <- stream.mapChunks(ch => Chunk.single(ch.size)).runCollect
+      } yield assert(chunkSizes)(forall(equalTo(2))))
     ).provideCustomLayerShared(layer)
 }
 
