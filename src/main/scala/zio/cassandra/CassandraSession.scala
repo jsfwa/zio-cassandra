@@ -6,7 +6,7 @@ import com.datastax.oss.driver.internal.core.config.typesafe.DefaultDriverConfig
 import com.typesafe.config.Config
 import zio.stream.Stream
 import zio.stream.ZStream.Pull
-import zio.{Chunk, Ref, Task, TaskManaged}
+import zio.{Chunk, Ref, Task, TaskManaged, ZIO}
 
 import java.net.InetSocketAddress
 import java.util.concurrent.CompletionStage
@@ -24,25 +24,24 @@ object CassandraSession {
     override def bind(stmt: PreparedStatement, bindValues: Seq[AnyRef]): Task[BoundStatement] =
       Task(stmt.bind(bindValues: _*))
 
-    override def select(stmt: Statement[_]): Stream[Throwable, Row] = Stream {
-      for {
-        io <- Ref.make(Option(execute(stmt))).toManaged_
-        pull = io.get.flatMap {
-          case None => Pull.end
-          case Some(task) =>
-            task.mapError(Option(_)).flatMap { rs =>
-              val result = Chunk.fromArray(rs.currentPage().asScala.toArray)
-              if (rs.hasMorePages) {
-                io.set(Some(fromJavaAsync(rs.fetchNextPage()))).as(result)
-              } else {
-                if (result.isEmpty) {
-                  Pull.end
-                } else io.set(None).as(result)
+    override def select(stmt: Statement[_]): Stream[Throwable, Row] =  {
+      def pull(ref: Ref[ZIO[Any, Option[Throwable], AsyncResultSet]]) =
+        for {
+          io <- ref.get
+          rs <- io
+          _ <- rs match {
+            case _ if rs.hasMorePages =>
+              ref.set(fromJavaAsync(rs.fetchNextPage()).mapError(Option(_)))
+            case _ if rs.currentPage().iterator().hasNext => ref.set(Pull.end)
+            case _                                        => Pull.end
+          }
+        } yield Chunk.fromArray(rs.currentPage().asScala.toArray)
 
-              }
-            }
-        }
-      } yield pull
+      Stream {
+        for {
+          ref <- Ref.make(execute(stmt).mapError(Option(_))).toManaged_
+        } yield pull(ref)
+      }
     }
 
     override def execute(query: String): Task[AsyncResultSet] =
