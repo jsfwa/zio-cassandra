@@ -80,7 +80,7 @@ object SessionSpec extends DefaultRunnableSpec with LogSupport with Fixtures {
         statement  <- session.bind(select, Seq("user1"))
         stream     = session.select(statement.setPageSize(2)).map(_.getString(0))
         chunkSizes <- stream.mapChunks(ch => Chunk.single(ch.size)).runCollect
-      } yield assert(chunkSizes)(forall(equalTo(2))))
+      } yield assert(chunkSizes)(forall(equalTo(2))) && assert(chunkSizes.size)(equalTo(5)))
     ).provideCustomLayerShared(layer)
 }
 

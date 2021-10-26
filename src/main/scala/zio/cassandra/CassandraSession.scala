@@ -1,19 +1,19 @@
 package zio.cassandra
 
 import com.datastax.oss.driver.api.core.cql._
-import com.datastax.oss.driver.api.core.{ CqlSession, CqlSessionBuilder }
+import com.datastax.oss.driver.api.core.{CqlSession, CqlSessionBuilder}
 import com.datastax.oss.driver.internal.core.config.typesafe.DefaultDriverConfigLoader
 import com.typesafe.config.Config
 import zio.stream.Stream
 import zio.stream.ZStream.Pull
-import zio.{ Chunk, Ref, Task, TaskManaged }
+import zio.{Chunk, Ref, Task, TaskManaged}
 
 import java.net.InetSocketAddress
 import java.util.concurrent.CompletionStage
 import scala.jdk.CollectionConverters._
 
 object CassandraSession {
-  import Task.{ fromCompletionStage => fromJavaAsync }
+  import Task.{fromCompletionStage => fromJavaAsync}
   class Live(underlying: CqlSession) extends service.CassandraSession {
     override def prepare(stmt: String): Task[PreparedStatement] =
       fromJavaAsync(underlying.prepareAsync(stmt))
