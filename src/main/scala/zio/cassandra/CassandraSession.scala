@@ -13,7 +13,9 @@ import java.util.concurrent.CompletionStage
 import scala.jdk.CollectionConverters._
 
 object CassandraSession {
+
   import Task.{fromCompletionStage => fromJavaAsync}
+
   class Live(underlying: CqlSession) extends service.CassandraSession {
     override def prepare(stmt: String): Task[PreparedStatement] =
       fromJavaAsync(underlying.prepareAsync(stmt))
@@ -25,7 +27,7 @@ object CassandraSession {
       Task(stmt.bind(bindValues: _*))
 
     override def select(stmt: Statement[_]): Stream[Throwable, Row] =  {
-      def pull(ref: Ref[ZIO[Any, Option[Throwable], AsyncResultSet]]) =
+      def pull(ref: Ref[ZIO[Any, Option[Throwable], AsyncResultSet]]): ZIO[Any, Option[Throwable], Chunk[Row]] =
         for {
           io <- ref.get
           rs <- io
