@@ -22,6 +22,7 @@ lazy val root =
       libraryDependencies ++=
         Dependencies.cassandraDependencies ++
           Dependencies.zioDependencies ++
+          Dependencies.commonDependencies ++
           Dependencies.testCommon,
       scalacOptions ++= Seq(
         "-encoding",
@@ -39,6 +40,7 @@ lazy val root =
         "-Werror",
         "-Wconf:any:error"
       ),
+      Compile / console / scalacOptions --= Seq("-Wconf:any:error", "-Werror", "-Xfatal-warnings", "-Ywarn-unused"),
       Test / parallelExecution := false,
       Test / fork := true
     )

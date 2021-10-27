@@ -12,6 +12,10 @@ object Dependencies {
     "com.datastax.oss" % "java-driver-core" % cassandraDriverVersion
   )
 
+  val commonDependencies = Seq(
+    "com.chuusai"         %% "shapeless"                      % "2.3.7"
+  )
+
   val zioDependencies = Seq(
     "dev.zio" %% "zio"                         % zioVersion,
     "dev.zio" %% "zio-streams"                 % zioVersion
