@@ -4,7 +4,7 @@ import com.datastax.oss.driver.api.core.cql.BoundStatement
 import shapeless.HList
 import zio.Task
 import zio.cassandra.cql.{Binder, Reads}
-import zio.cassandra.service.CassandraSession
+import zio.cassandra.CassandraSession
 
 case class QueryTemplate[V <: HList: Binder, R: Reads] private[cql] (
   query: String,

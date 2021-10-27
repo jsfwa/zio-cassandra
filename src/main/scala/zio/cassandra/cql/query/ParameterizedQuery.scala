@@ -4,7 +4,7 @@ import com.datastax.oss.driver.api.core.cql.BoundStatement
 import shapeless.HList
 import zio.Task
 import zio.cassandra.cql.{Binder, Reads}
-import zio.cassandra.service.CassandraSession
+import zio.cassandra.CassandraSession
 import zio.stream.Stream
 
 case class ParameterizedQuery[V <: HList: Binder, R: Reads] private (template: QueryTemplate[V, R], values: V) {

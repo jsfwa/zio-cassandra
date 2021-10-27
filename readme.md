@@ -55,7 +55,7 @@ This syntax reuse implicit driver prepared statements cache
 ```scala
 import com.datastax.oss.driver.api.core.ConsistencyLevel
 import zio.cassandra.CassandraSession
-import zio.cassandra.cql.syntax._
+import zio.cassandra.cql._
 import zio._
 
 case class Model(id: Int, data: String)
@@ -87,7 +87,7 @@ When you want control your prepared statements manually.
 import zio.duration._
 import com.datastax.oss.driver.api.core.ConsistencyLevel
 import zio.cassandra.CassandraSession
-import zio.cassandra.cql.syntax._
+import zio.cassandra.cql._
 import zio.stream._
     
 case class Model(id: Int, data: String)
@@ -101,16 +101,18 @@ trait Service {
 object Dao {
   
   private val insertQuery = cqlt"insert into table (id, data) values (${Put[Int]}, ${Put[String]})"
-    .config(_.setTimeout(1.second.toJava))
+    .config(_.setTimeout(1.second))
   private val selectQuery = cqlt"select id, data from table where id = ${Put[Int]}".as[Model]
+  private val selectAllQuery = cqlt"select id, data from table".as[Model]
 
   def apply(session: CassandraSession) = for {
     insert <- insertQuery.prepare(session)
     select <- selectQuery.prepare(session)      
+    selectAll <- selectAllQuery.prepare(session)
   } yield new Service {
     override def put(value: Model) = insert(value.id, value.data).execute.unit
     override def get(id: Int) = select(id).config(_.setExecutionProfileName("default")).selectOne
-    override def get(id: Int) = select(id).config(_.setExecutionProfileName("default")).select
+    override def getAll() = selectAll().config(_.setExecutionProfileName("default")).select
   } 
 } 
 ```
@@ -138,4 +140,4 @@ object Dao {
 
 
 ## References
-- [Datastax Java driver](https://docs.datastax.com/en/developer/java-driver/4.9)
+- [Datastax Java driver](https://docs.datastax.com/en/developer/java-driver/latest/manual/core/)

@@ -2,7 +2,7 @@ package zio.cassandra.cql.query
 
 import com.datastax.oss.driver.api.core.cql.{BatchStatementBuilder, BatchType}
 import zio.Task
-import zio.cassandra.service.CassandraSession
+import zio.cassandra.CassandraSession
 
 class Batch(batchStatementBuilder: BatchStatementBuilder) {
   def add(queries: Seq[Query[_]]) = new Batch(batchStatementBuilder.addStatements(queries.map(_.statement): _*))

@@ -3,7 +3,7 @@ package zio.cassandra.cql.query
 import com.datastax.oss.driver.api.core.cql.{BoundStatement, PreparedStatement}
 import shapeless.{HList, ProductArgs}
 import zio.cassandra.cql.{Binder, Reads}
-import zio.cassandra.service.CassandraSession
+import zio.cassandra.CassandraSession
 
 class PreparedQuery[V <: HList: Binder, R: Reads] private[cql] (
   session: CassandraSession,
