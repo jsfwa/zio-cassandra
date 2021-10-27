@@ -98,7 +98,7 @@ trait Service {
   def getAll(): Stream[Throwable, Model]
 }
     
-object Dao {
+object Service {
   
   private val insertQuery = cqlt"insert into table (id, data) values (${Put[Int]}, ${Put[String]})"
     .config(_.setTimeout(1.second))
