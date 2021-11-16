@@ -35,7 +35,7 @@ object CassandraSession {
             case _ if rs.currentPage().iterator().hasNext => ref.set(Pull.end)
             case _                                        => Pull.end
           }
-        } yield Chunk.fromArray(rs.currentPage().asScala.toArray)
+        } yield Chunk.fromIterator(rs.currentPage().asScala.iterator)
 
       Stream {
         for {

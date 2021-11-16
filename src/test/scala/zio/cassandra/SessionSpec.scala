@@ -5,7 +5,6 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException
 import com.dimafeng.testcontainers.CassandraContainer
 import com.typesafe.config.ConfigFactory
 import wvlet.log.{ LogLevel, LogSupport, Logger }
-import zio.cassandra.service.CassandraSession
 import zio.container.ZTestContainer
 import zio.test.Assertion._
 import zio.test._
@@ -142,7 +141,7 @@ trait Fixtures {
 
   val layer = layaerCassandra >+> layerSession
 
-  def prepareTestSession(session: CassandraSession): Task[Unit] =
+  def prepareTestSession(session: service.CassandraSession): Task[Unit] =
     for {
       table  <- ZIO.succeed("prepared_data")
       _      <- session.execute(keyspaceQuery)
