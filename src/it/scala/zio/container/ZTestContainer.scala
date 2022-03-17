@@ -11,7 +11,7 @@ import zio.test.TestFailure
 object ZTestContainer {
 
   def cassandra: ZLayer[Blocking, TestFailure[Nothing], Has[CassandraContainer]] =
-    managed(CassandraContainer(dockerImageNameOverride = DockerImageName.parse("cassandra:3.11.11")))
+    managed(CassandraContainer(dockerImageNameOverride = DockerImageName.parse("cassandra:4.0.3")))
       .mapError(TestFailure.die)
       .toLayer
 
@@ -21,8 +21,7 @@ object ZTestContainer {
         container.start()
         container
       }
-    }(c => effectBlocking(c.stop()).orDie)
-
-  def apply[C: Tag]: RIO[Has[C], C] =
-    ZIO.service[C]
+    } { c =>
+      effectBlocking(c.stop()).orDie
+    }
 }
