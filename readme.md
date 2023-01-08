@@ -1,3 +1,5 @@
+## moved to [https://github.com/narma/zio-cassandra](https://github.com/narma/zio-cassandra)
+
 [![Release Artifacts][Badge-SonatypeReleases]][Link-SonatypeReleases] [![Snapshot Artifacts][Badge-SonatypeSnapshots]][Link-SonatypeSnapshots]
 
 [Link-SonatypeReleases]: https://oss.sonatype.org/content/repositories/releases/io/github/jsfwa/zio-cassandra_2.13/ "Sonatype Releases"
